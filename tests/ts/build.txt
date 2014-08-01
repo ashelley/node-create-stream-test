@@ -1,0 +1,3 @@
+fs-tests.ts
+
+--out ../tests.js
