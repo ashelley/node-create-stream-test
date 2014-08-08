@@ -12,6 +12,5 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "memwatch": "^0.2.2"
   }
 }

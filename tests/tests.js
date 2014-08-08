@@ -1,10 +1,6 @@
 /// <reference path="../../types/mocha.d.ts" />
 /// <reference path="../../types/node.d.ts" />
-var fs = require('fs'), path = require('path'), memwatch = require('memwatch');
-
-memwatch.on('leak', function (info) {
-    console.log(info);
-});
+var fs = require('fs'), path = require('path');
 
 var kb = 1024;
 
