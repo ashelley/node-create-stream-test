@@ -18,16 +18,30 @@ var sync = function(stream, maxKb) {
 		max = kb*maxKb,
 		count = 0;
 
-	while(i < max) {
-		if(!(i%kb)) {		
-			count++;					
-			console.log(count);
-		}
-		stream.write("1");
-		i++
-	}
+	var ok;
 
-	stream.end();	
+	var write = function(i, max) {
+		while(i < max) {
+			if(!(i%kb)) {		
+				count++;					
+				console.log(count);
+			}
+			ok = stream.write("1");
+			i++;
+			if(!ok) {
+				console.log(i, max);
+				break;
+			}
+		}
+		if(i < max) {
+			stream.once('drain', function() {
+				write(i, max);
+			});
+		} else {
+			stream.end();	
+		}		
+	}
+	write(i, max);
 }
 
 var async = function(stream, maxKb) {
@@ -41,11 +55,19 @@ var async = function(stream, maxKb) {
 				count++;					
 				console.log(count);
 			}
-			stream.write("1");
+			var ok = stream.write("1");
 			i++;				
-			setImmediate(function() {
-				write(i, max);
-			});
+			if(ok) {
+				setImmediate(function() {
+					write(i, max);
+				});
+			} else {
+				stream.once('drain', function() {
+					setImmediate(function() {
+						write(i, max);
+					});
+				});
+			}
 		} else {
 			stream.end();
 		}
@@ -65,14 +87,20 @@ var partialAsync = function(stream, maxKb) {
 				count++;					
 				console.log(count);
 			}
-			stream.write("1");
+			var ok = stream.write("1");
 			i++;				
-			if(!(i%100)) {
-				setImmediate(function() {
+			if(ok) {
+				if(!(i%100)) {
+					setImmediate(function() {
+						write(i, max);
+					});
+				} else {
+					write(i, max);
+				}
+			} else {
+				stream.once('drain', function() {
 					write(i, max);
 				});
-			} else {
-				write(i, max);
 			}
 		} else {
 			stream.end();
